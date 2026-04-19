@@ -3,26 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>מעקב תגבורי מתמטיקה</title>
+<title>מעקב שלי</title>
 <style>
   :root {
     --bg: #eef1f8;
     --surface: #ffffff;
-    --surface2: #f0ede6;
-    --border: #e2ddd6;
-    --text: #1a1814;
-    --text2: #6b6560;
-    --text3: #9b958e;
+    --surface2: #f4f6fb;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text2: #475569;
+    --text3: #94a3b8;
     --accent: #2d5a8e;
-    --accent-light: #e8f0f9;
-    --green: #1a7a4a;
-    --green-light: #e6f4ec;
-    --amber: #b85e00;
-    --amber-light: #fef3e2;
-    --red: #c0392b;
-    --red-light: #fdecea;
-    --radius: 12px;
-    --radius-sm: 8px;
+    --accent2: #3b82f6;
+    --accent-light: #eff6ff;
+    --accent-grad: linear-gradient(135deg,#1e3a5f,#2d5a8e,#4a90d9);
+    --header-grad: linear-gradient(135deg,#1e3a5f 0%,#2d5a8e 60%,#4a90d9 100%);
+    --green: #059669;
+    --green-light: #ecfdf5;
+    --amber: #b45309;
+    --amber-light: #fffbeb;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --shadow: 0 2px 12px rgba(15,23,42,0.08);
+    --shadow-lg: 0 8px 30px rgba(15,23,42,0.13);
+  }
+  [data-subject="english"] {
+    --accent: #0d7a5f;
+    --accent2: #10b981;
+    --accent-light: #ecfdf5;
+    --accent-grad: linear-gradient(135deg,#064e3b,#0d7a5f,#10b981);
+    --header-grad: linear-gradient(135deg,#064e3b 0%,#0d7a5f 60%,#10b981 100%);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -61,58 +73,81 @@
 
   /* HEADER */
   .app-header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
+    background: var(--header-grad);
+    padding: 0 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    height: 60px;
+    height: 66px;
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
   }
   .app-logo {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 17px; font-weight: 600; color: var(--accent);
+    display: flex; align-items: center; gap: 11px;
+    font-size: 18px; font-weight: 800; color: white; letter-spacing: -0.3px;
   }
-  .app-logo .icon { font-size: 22px; }
+  .app-logo .icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  /* SUBJECT TOGGLE */
+  .subject-toggle {
+    display: flex; background: rgba(255,255,255,0.15); border-radius: 24px; padding: 3px; gap: 2px;
+  }
+  .subj-btn {
+    padding: 5px 16px; border-radius: 20px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.75);
+    background: transparent; transition: all 0.2s; white-space: nowrap;
+  }
+  .subj-btn.active { background: rgba(255,255,255,0.95); color: var(--accent); }
+  .subj-btn:hover:not(.active) { color: white; background: rgba(255,255,255,0.2); }
+
   .sync-status {
     display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12px; font-weight: 500; padding: 4px 12px;
+    font-size: 12px; font-weight: 500; padding: 5px 13px;
     border-radius: 20px; border: 1px solid;
   }
-  .sync-status.loading { background: var(--amber-light); color: var(--amber); border-color: #f0c070; }
-  .sync-status.ok { background: var(--green-light); color: var(--green); border-color: #8ecfac; }
-  .sync-status.error { background: var(--red-light); color: var(--red); border-color: #f0a0a0; }
+  .sync-status.loading { background: rgba(251,191,36,0.2); color: #fde68a; border-color: rgba(251,191,36,0.4); animation: pulse 1.5s infinite; }
+  .sync-status.ok { background: rgba(16,185,129,0.2); color: #6ee7b7; border-color: rgba(16,185,129,0.4); }
+  .sync-status.error { background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.4); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
 
   .week-badge {
-    background: var(--accent-light); color: var(--accent);
-    border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 500;
-    border: 1px solid #c5d9ef;
+    background: rgba(255,255,255,0.2); color: white;
+    border-radius: 20px; padding: 5px 15px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.3);
   }
+
+  /* NAV TABS */
   .nav-tabs {
     background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
+    border-bottom: 2px solid var(--border);
+    padding: 0 28px;
+    display: flex; gap: 2px; overflow-x: auto;
+    position: sticky; top: 66px; z-index: 99;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   }
   .tab-btn {
-    padding: 12px 18px;
+    padding: 13px 20px;
     background: none; border: none; cursor: pointer;
     font-size: 14px; font-weight: 500; color: var(--text2);
-    border-bottom: 2.5px solid transparent;
-    white-space: nowrap;
-    transition: all 0.15s;
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+    white-space: nowrap; transition: all 0.18s;
   }
-  .tab-btn:hover { color: var(--accent); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover { color: var(--accent); background: var(--accent-light); border-radius: 8px 8px 0 0; }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
 
   /* MAIN LAYOUT */
-  .main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .main { padding: 28px; max-width: 1240px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeUp 0.25s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
 
   /* CARDS */
   .card {
@@ -120,32 +155,43 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.2s;
   }
+  .card:hover { box-shadow: var(--shadow-lg); }
   .card-header {
-    padding: 16px 20px;
+    padding: 16px 22px;
     border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: var(--surface2);
   }
-  .card-title { font-size: 15px; font-weight: 600; }
-  .card-body { padding: 20px; }
+  .card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card-body { padding: 22px; }
 
   /* STATS ROW */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 14px;
+    margin-bottom: 26px;
   }
   .stat-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 16px;
+    border-radius: var(--radius);
+    padding: 20px 18px;
     text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.18s, box-shadow 0.18s;
+    position: relative; overflow: hidden;
   }
-  .stat-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; }
-  .stat-value { font-size: 26px; font-weight: 600; color: var(--text); }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent-grad);
+  }
+  .stat-label { font-size: 11px; font-weight: 700; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 30px; font-weight: 800; color: var(--text); line-height: 1; }
   .stat-value.blue { color: var(--accent); }
   .stat-value.green { color: var(--green); }
   .stat-value.amber { color: var(--amber); }
@@ -217,49 +263,69 @@
   .presence-btn.absent { background: var(--red-light); color: var(--red); border-color: var(--red); }
   .presence-btn.unknown { background: var(--surface2); color: var(--text2); border-color: var(--border); }
 
-  /* SAVE BTN */
+  /* BUTTONS */
   .btn-primary {
-    background: var(--accent); color: white; border: none;
-    border-radius: var(--radius-sm); padding: 10px 20px;
-    font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s;
+    background: var(--accent-grad); color: white; border: none;
+    border-radius: var(--radius-sm); padding: 10px 22px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.18s; box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+    display: inline-flex; align-items: center; gap: 6px;
   }
-  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.22); }
+  .btn-primary:active { transform: none; }
   .btn-secondary {
-    background: var(--surface); color: var(--text); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 10px 20px;
-    font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    background: var(--surface); color: var(--text2); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 22px;
+    font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.18s;
   }
-  .btn-secondary:hover { background: var(--bg); }
+  .btn-secondary:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
 
   /* STUDENT SUMMARY CARDS */
   .student-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px;
   }
   .student-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 16px; cursor: pointer;
-    transition: box-shadow 0.15s, border-color 0.15s;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 18px; cursor: pointer;
+    transition: all 0.22s; box-shadow: var(--shadow);
+    position: relative; overflow: hidden;
   }
-  .student-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(45,90,142,0.1); }
-  .student-card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,90,142,0.15); }
-  .student-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .student-card::after {
+    content: ''; position: absolute; top: 0; right: 0; left: 0; height: 3px;
+    background: var(--accent-grad); transform: scaleX(0); transform-origin: right;
+    transition: transform 0.22s;
+  }
+  .student-card:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .student-card:hover::after { transform: scaleX(1); }
+  .student-header { display: flex; align-items: center; gap: 13px; margin-bottom: 14px; }
   .avatar {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: var(--accent-light); color: var(--accent);
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--accent-grad); color: white;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 600; font-size: 14px; flex-shrink: 0;
+    font-weight: 700; font-size: 15px; flex-shrink: 0;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
   }
-  .student-name { font-weight: 600; font-size: 15px; }
+  .av0{background:linear-gradient(135deg,#1e3a5f,#4a90d9)}
+  .av1{background:linear-gradient(135deg,#064e3b,#10b981)}
+  .av2{background:linear-gradient(135deg,#7c1d1d,#f87171)}
+  .av3{background:linear-gradient(135deg,#78350f,#f59e0b)}
+  .av4{background:linear-gradient(135deg,#1e1b4b,#818cf8)}
+  .av5{background:linear-gradient(135deg,#831843,#f472b6)}
+  .av6{background:linear-gradient(135deg,#0c4a6e,#38bdf8)}
+  .av7{background:linear-gradient(135deg,#134e4a,#2dd4bf)}
+  .av8{background:linear-gradient(135deg,#7c2d12,#fb923c)}
+  .av9{background:linear-gradient(135deg,#3b0764,#a855f7)}
+  .student-name { font-weight: 700; font-size: 15px; }
   .student-status { font-size: 12px; color: var(--text3); margin-top: 2px; }
   .progress-bar-wrap { margin: 8px 0 4px; }
-  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 4px; }
-  .progress-bar { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
-  .progress-fill.blue { background: var(--accent); }
-  .progress-fill.green { background: var(--green); }
-  .student-metrics { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
-  .metric { font-size: 12px; color: var(--text2); }
-  .metric strong { color: var(--text); font-weight: 600; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 5px; }
+  .progress-bar { background: var(--surface2); border-radius: 6px; height: 7px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 6px; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+  .progress-fill.blue { background: var(--accent-grad); }
+  .progress-fill.green { background: linear-gradient(135deg,#059669,#10b981); }
+  .student-metrics { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--border); }
+  .metric { font-size: 12px; color: var(--text2); background: var(--surface2); padding: 3px 9px; border-radius: 20px; border: 1px solid var(--border); }
+  .metric strong { color: var(--accent); font-weight: 700; }
 
   /* PLAN TABLE */
   .plan-grid { display: grid; gap: 10px; }
@@ -307,10 +373,6 @@
   }
   #toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* HIDDEN */
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
   /* RESPONSIVE */
   @media (max-width: 600px) {
     .main { padding: 16px; }
@@ -320,7 +382,14 @@
     .plan-header { display: none; }
   }
 
-  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .section-title {
+    font-size: 17px; font-weight: 800; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px; color: var(--text);
+  }
+  .section-title::before {
+    content: ''; display: inline-block; width: 4px; height: 20px;
+    background: var(--accent-grad); border-radius: 2px;
+  }
   .row-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
   .topic-chip {
     background: var(--accent-light); color: var(--accent);
@@ -337,11 +406,17 @@
 
 <div class="app-header">
   <div class="app-logo">
-    <span class="icon">📐</span>
-    <span>מעקב תגבורי מתמטיקה</span>
+    <div class="icon" id="header-icon">📐</div>
+    <span>מעקב שלי</span>
   </div>
-  <span class="week-badge" id="current-week-badge">שבוע 1</span>
-  <span class="sync-status loading" id="sync-status">טוען...</span>
+  <div class="subject-toggle">
+    <button class="subj-btn active" id="subj-math" onclick="switchSubject('math')">📐 מתמטיקה</button>
+    <button class="subj-btn" id="subj-english" onclick="switchSubject('english')">📖 אנגלית</button>
+  </div>
+  <div class="header-right">
+    <span class="week-badge" id="current-week-badge">שבוע 1</span>
+    <span class="sync-status loading" id="sync-status">טוען...</span>
+  </div>
 </div>
 
 <nav class="nav-tabs">
@@ -454,15 +529,21 @@
 <script>
 const STUDENT_KEYS = ['חניך 1','חניך 2','חניך 3','חניך 4','חניך 5','חניך 6','חניך 7','חניך 8','חניך 9','חניך 10'];
 const STUDENTS = STUDENT_KEYS;
-function sName(key) { return (db._names && db._names[key]) || key; }
+let currentSubject = 'math';
+
+function sName(key) {
+  const names = db[currentSubject + '__names'];
+  return (names && names[key]) || key;
+}
 function setStudentName(key, val) {
-  if (!db._names) db._names = {};
-  db._names[key] = val.trim() || key;
+  const nk = currentSubject + '__names';
+  if (!db[nk]) db[nk] = {};
+  db[nk][key] = val.trim() || key;
   saveDB();
-  // refresh weekly table name cells live
   document.querySelectorAll(`[data-namekey="${key}"]`).forEach(el => { el.value = sName(key); });
 }
-const PLAN = [
+
+const PLAN_MATH = [
   {week:1, topic:'פעולות חשבון וסדר פעולות', sub:'חיבור, חיסור, כפל, חילוק, סדר פעולות', goal:'לייצב בסיס ולצמצם טעויות טכניות', output:'פותר תרגילים בסיסיים בצורה מדויקת'},
   {week:2, topic:'שברים פשוטים וצמצום', sub:'צמצום, הרחבה, שבר פשוט ומעורב', goal:'לחזק שליטה בשפה המתמטית', output:'מזהה ומבצע פעולות בסיסיות בשברים'},
   {week:3, topic:'שברים – פעולות', sub:'חיבור, חיסור, כפל, חילוק', goal:'להוריד חשש משברים', output:'פותר רצף תרגילים בשברים באופן עצמאי'},
@@ -476,6 +557,39 @@ const PLAN = [
   {week:11, topic:'תרגול משולב', sub:'שילוב נושאים ועבודה לפי זמן', goal:'לבנות רצף פתרון וביטחון', output:'פותר דף עבודה משולב בזמן'},
   {week:12, topic:'סימולציה מלאה וסיכום', sub:'מבחן מסכם + שיח משוב', goal:'להעריך מוכנות ולסכם תהליך', output:'מציג שיפור ויעדי המשך'},
 ];
+const PLAN_ENGLISH = [
+  {week:1, topic:'Reading Comprehension – Basics', sub:'Main idea, details, skimming', goal:'להבין טקסט פשוט בעברית ובאנגלית', output:'עונה על שאלות הבנה מטקסט פשוט'},
+  {week:2, topic:'Vocabulary Building', sub:'Word families, context clues', goal:'להרחיב אוצר מילים פעיל', output:'משתמש ב-30 מילים חדשות בהקשר'},
+  {week:3, topic:'Grammar – Tenses', sub:'Present, Past, Future simple', goal:'לבנות זמן נכון במשפט', output:'כותב משפטים בכל שלושת הזמנים'},
+  {week:4, topic:'Writing – Paragraph', sub:'Topic sentence, supporting, conclusion', goal:'לארגן מחשבות בפסקה', output:'כותב פסקה של 5-6 משפטים'},
+  {week:5, topic:'Listening Comprehension', sub:'Short dialogues, key words', goal:'לזהות מידע עיקרי מהאזנה', output:'עונה על 70% מהשאלות נכון'},
+  {week:6, topic:'Speaking – Conversation', sub:'Daily topics, question-answer', goal:'לדבר ללא היסוס על נושאים יומיומיים', output:'מנהל שיחה של 3 דקות'},
+  {week:7, topic:'Advanced Grammar', sub:'Questions, conditionals, modals', goal:'לשפר דיוק דקדוקי', output:'פותר תרגילי דקדוק ברמה B1'},
+  {week:8, topic:'Essay Writing', sub:'Introduction, body, conclusion', goal:'לכתוב חיבור מובנה', output:'כותב חיבור של 150 מילה'},
+  {week:9, topic:'Literary Text Analysis', sub:'Plot, characters, theme', goal:'להבין טקסט ספרותי', output:'מזהה ומנתח אלמנטים ספרותיים'},
+  {week:10, topic:'Exam Preparation', sub:'Question types, time management', goal:'לשלוט בסגנון שאלות הבחינה', output:'פותר מבחן דמה ב-70%+'},
+  {week:11, topic:'Mixed Practice', sub:'All skills combined', goal:'לבנות ביטחון עצמי כולל', output:'משלים מטלה משולבת בזמן'},
+  {week:12, topic:'Full Simulation & Summary', sub:'Final exam + feedback', goal:'להעריך מוכנות ולסכם', output:'מציג שיפור מלא ויעדי המשך'},
+];
+
+function getCurrentPlan() { return currentSubject === 'math' ? PLAN_MATH : PLAN_ENGLISH; }
+
+function switchSubject(subj) {
+  currentSubject = subj;
+  document.documentElement.setAttribute('data-subject', subj);
+  document.getElementById('subj-math').classList.toggle('active', subj === 'math');
+  document.getElementById('subj-english').classList.toggle('active', subj === 'english');
+  document.getElementById('header-icon').textContent = subj === 'math' ? '📐' : '📖';
+  // rebuild week-select options
+  const sel = document.getElementById('week-select');
+  const plan = getCurrentPlan();
+  sel.innerHTML = plan.map(p => `<option value="${p.week}">שבוע ${p.week} – ${p.topic}</option>`).join('');
+  currentWeek = 1;
+  document.getElementById('current-week-badge').textContent = 'שבוע 1';
+  document.getElementById('week-topic-label').textContent = plan[0].topic;
+  renderWeeklyTable();
+  renderPlan();
+}
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw47809quNQ6dn5Y3umzw5hCvdezzk_P4lV0g3q9LCrwcwuyaRHTwV4WOQL-MW2Q9Lk/exec';
 
@@ -554,7 +668,7 @@ function switchTab(tab) {
 function loadWeek(w) {
   currentWeek = parseInt(w);
   document.getElementById('current-week-badge').textContent = 'שבוע ' + w;
-  document.getElementById('week-topic-label').textContent = PLAN[w-1].topic;
+  document.getElementById('week-topic-label').textContent = getCurrentPlan()[w-1].topic;
   renderWeeklyTable();
 }
 
@@ -562,7 +676,7 @@ function renderWeeklyTable() {
   const tbody = document.getElementById('weekly-tbody');
   tbody.innerHTML = '';
   STUDENTS.forEach(student => {
-    const key = `w${currentWeek}_${student}`;
+    const key = `${currentSubject}_w${currentWeek}_${student}`;
     const d = db[key] || {};
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -636,7 +750,7 @@ function saveWeek() {
 
 function clearWeek() {
   if (!confirm('למחוק את כל הנתונים של השבוע הזה?')) return;
-  STUDENTS.forEach(s => { delete db[`w${currentWeek}_${s}`]; });
+  STUDENTS.forEach(s => { delete db[`${currentSubject}_w${currentWeek}_${s}`]; });
   saveDB();
   renderWeeklyTable();
 }
@@ -651,7 +765,7 @@ function renderStudents() {
   const studentData = STUDENTS.map(student => {
     let scores = [], presence = 0, presenceTotal = 0, understanding = [], canExplainYes = 0, canExplainTotal = 0;
     for (let w = 1; w <= 12; w++) {
-      const d = db[`w${w}_${student}`];
+      const d = db[`${currentSubject}_w${w}_${student}`];
       if (!d) continue;
       if (d.score !== undefined && d.score !== '') scores.push(parseFloat(d.score));
       if (d.presence === 'present') presence++;
@@ -692,7 +806,7 @@ function renderStudents() {
   `;
 
   cardsEl.innerHTML = '';
-  studentData.forEach(sd => {
+  studentData.forEach((sd, idx) => {
     const div = document.createElement('div');
     div.className = 'student-card';
     const statusBadge = sd.status === 'במסלול טוב' ? 'badge-green' : sd.status === 'במעקב' ? 'badge-amber' : sd.status === 'נדרש חיזוק' ? 'badge-red' : 'badge-gray';
@@ -709,7 +823,7 @@ function renderStudents() {
 
     div.innerHTML = `
       <div class="student-header">
-        <div class="avatar">${getStudentInitials(sd.student)}</div>
+        <div class="avatar av${idx % 10}">${getStudentInitials(sd.student)}</div>
         <div>
           <div class="student-name">${sName(sd.student)}</div>
           <span class="badge ${statusBadge}">${sd.status}</span>
@@ -732,7 +846,7 @@ function renderStudents() {
 function renderPlan() {
   const el = document.getElementById('plan-rows');
   el.innerHTML = '';
-  PLAN.forEach(p => {
+  getCurrentPlan().forEach(p => {
     const isCurrent = p.week === currentWeek;
     const div = document.createElement('div');
     div.className = 'plan-row' + (isCurrent ? ' current' : '');
@@ -757,7 +871,7 @@ function renderDashboard() {
   for (let w = 1; w <= 12; w++) {
     let scores = [];
     STUDENTS.forEach(s => {
-      const d = db[`w${w}_${s}`];
+      const d = db[`${currentSubject}_w${w}_${s}`];
       if (d && d.score !== undefined && d.score !== '') scores.push(parseFloat(d.score));
     });
     weeklyAvg.push(scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : null);
@@ -768,7 +882,7 @@ function renderDashboard() {
   STUDENTS.forEach(student => {
     let scores = [];
     for (let w = 1; w <= 12; w++) {
-      const d = db[`w${w}_${student}`];
+      const d = db[`${currentSubject}_w${w}_${student}`];
       if (d && d.score !== undefined && d.score !== '') scores.push(parseFloat(d.score));
     }
     if (!scores.length) { nodata++; return; }
@@ -791,7 +905,7 @@ function renderDashboard() {
   // chart
   if (chartInst) { chartInst.destroy(); chartInst = null; }
   const ctx = document.getElementById('myChart').getContext('2d');
-  const labels = PLAN.map(p => 'ש' + p.week);
+  const labels = getCurrentPlan().map(p => 'ש' + p.week);
   const data = weeklyAvg.map(v => v);
   chartInst = new Chart(ctx, {
     type: 'line',
@@ -800,12 +914,13 @@ function renderDashboard() {
       datasets: [{
         label: 'ממוצע ציון',
         data,
-        borderColor: '#2d5a8e',
-        backgroundColor: 'rgba(45,90,142,0.08)',
-        borderWidth: 2,
-        pointBackgroundColor: '#2d5a8e',
+        borderColor: currentSubject === 'math' ? '#2d5a8e' : '#0d7a5f',
+        backgroundColor: currentSubject === 'math' ? 'rgba(45,90,142,0.09)' : 'rgba(13,122,95,0.09)',
+        borderWidth: 2.5,
+        pointBackgroundColor: currentSubject === 'math' ? '#2d5a8e' : '#0d7a5f',
+        pointBorderColor: '#fff', pointBorderWidth: 2,
         pointRadius: 5,
-        tension: 0.3,
+        tension: 0.4,
         fill: true,
         spanGaps: true
       }]
@@ -846,6 +961,7 @@ function showToast(msg) {
 }
 
 // ---- INIT ----
+document.documentElement.setAttribute('data-subject', 'math');
 loadDB().then(() => {
   renderWeeklyTable();
   renderPlan();
