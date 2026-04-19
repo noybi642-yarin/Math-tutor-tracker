@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מעקב תגבורי מתמטיקה</title>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: #e2ddd6;
+    --text: #1a1814;
+    --text2: #6b6560;
+    --text3: #9b958e;
+    --accent: #2d5a8e;
+    --accent-light: #e8f0f9;
+    --green: #1a7a4a;
+    --green-light: #e6f4ec;
+    --amber: #b85e00;
+    --amber-light: #fef3e2;
+    --red: #c0392b;
+    --red-light: #fdecea;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', 'Arial Hebrew', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 17px; font-weight: 600; color: var(--accent);
+  }
+  .app-logo .icon { font-size: 22px; }
+  .sync-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; padding: 4px 12px;
+    border-radius: 20px; border: 1px solid;
+  }
+  .sync-status.loading { background: var(--amber-light); color: var(--amber); border-color: #f0c070; }
+  .sync-status.ok { background: var(--green-light); color: var(--green); border-color: #8ecfac; }
+  .sync-status.error { background: var(--red-light); color: var(--red); border-color: #f0a0a0; }
+
+  .week-badge {
+    background: var(--accent-light); color: var(--accent);
+    border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 500;
+    border: 1px solid #c5d9ef;
+  }
+  .nav-tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    padding: 12px 18px;
+    background: none; border: none; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: var(--text2);
+    border-bottom: 2.5px solid transparent;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--accent); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* MAIN LAYOUT */
+  .main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .card-title { font-size: 15px; font-weight: 600; }
+  .card-body { padding: 20px; }
+
+  /* STATS ROW */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 600; color: var(--text); }
+  .stat-value.blue { color: var(--accent); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.amber { color: var(--amber); }
+
+  /* WEEKLY INPUT VIEW */
+  .week-selector {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .week-selector label { font-size: 14px; color: var(--text2); font-weight: 500; }
+  .week-selector select, .week-selector input {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 8px 12px; font-size: 14px; background: var(--surface);
+    color: var(--text); outline: none;
+  }
+  .week-selector select:focus, .week-selector input:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,90,142,0.1);
+  }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 700px; }
+  th {
+    background: var(--surface2); font-size: 12px; font-weight: 600;
+    color: var(--text2); padding: 10px 12px; text-align: right;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td {
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
+    font-size: 14px; vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+
+  /* INPUTS IN TABLE */
+  .td-input {
+    width: 100%; border: 1px solid transparent; border-radius: 6px;
+    padding: 5px 8px; font-size: 13px; background: transparent;
+    color: var(--text); outline: none; transition: all 0.15s;
+  }
+  .td-input:hover { border-color: var(--border); background: var(--surface); }
+  .td-input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 2px rgba(45,90,142,0.1); }
+  .td-input.score { width: 70px; text-align: center; }
+  .td-input.time { width: 80px; text-align: center; }
+
+  select.td-input { cursor: pointer; }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 500; white-space: nowrap;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-gray { background: var(--surface2); color: var(--text2); }
+  .badge-blue { background: var(--accent-light); color: var(--accent); }
+
+  /* UNDERSTANDING STARS */
+  .stars { display: flex; gap: 3px; align-items: center; }
+  .star { cursor: pointer; font-size: 16px; line-height: 1; color: #ddd; transition: color 0.1s; }
+  .star.on { color: #f4b400; }
+
+  /* PRESENCE BTN */
+  .presence-btn {
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    border: 1.5px solid; cursor: pointer; transition: all 0.15s;
+  }
+  .presence-btn.present { background: var(--green-light); color: var(--green); border-color: var(--green); }
+  .presence-btn.absent { background: var(--red-light); color: var(--red); border-color: var(--red); }
+  .presence-btn.unknown { background: var(--surface2); color: var(--text2); border-color: var(--border); }
+
+  /* SAVE BTN */
+  .btn-primary {
+    background: var(--accent); color: white; border: none;
+    border-radius: var(--radius-sm); padding: 10px 20px;
+    font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-secondary {
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 20px;
+    font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  /* STUDENT SUMMARY CARDS */
+  .student-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+  }
+  .student-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .student-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(45,90,142,0.1); }
+  .student-card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,90,142,0.15); }
+  .student-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--accent-light); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 14px; flex-shrink: 0;
+  }
+  .student-name { font-weight: 600; font-size: 15px; }
+  .student-status { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .progress-bar-wrap { margin: 8px 0 4px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .progress-bar { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+  .progress-fill.blue { background: var(--accent); }
+  .progress-fill.green { background: var(--green); }
+  .student-metrics { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .metric { font-size: 12px; color: var(--text2); }
+  .metric strong { color: var(--text); font-weight: 600; }
+
+  /* PLAN TABLE */
+  .plan-grid { display: grid; gap: 10px; }
+  .plan-row {
+    display: grid; grid-template-columns: 60px 1fr 1fr 1fr 1fr;
+    gap: 12px; padding: 14px 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); align-items: center;
+    transition: border-color 0.15s;
+  }
+  .plan-row:hover { border-color: var(--accent); }
+  .plan-row.current { border-color: var(--accent); background: var(--accent-light); }
+  .week-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface2); color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 14px; flex-shrink: 0;
+  }
+  .week-num.active { background: var(--accent); color: white; }
+  .plan-topic { font-weight: 600; font-size: 14px; }
+  .plan-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .plan-goal { font-size: 13px; color: var(--text2); }
+  .plan-output { font-size: 13px; color: var(--green); }
+  .plan-header {
+    display: grid; grid-template-columns: 60px 1fr 1fr 1fr 1fr;
+    gap: 12px; padding: 8px 16px;
+    font-size: 12px; font-weight: 600; color: var(--text3);
+  }
+
+  /* DASHBOARD */
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .dashboard-grid { grid-template-columns: 1fr; } }
+  .big-stat {
+    text-align: center; padding: 28px 20px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  }
+  .big-stat .num { font-size: 48px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .big-stat .lbl { font-size: 14px; color: var(--text2); margin-top: 6px; }
+
+  /* TOAST */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #1a1814; color: white; padding: 12px 24px; border-radius: 24px;
+    font-size: 14px; font-weight: 500; z-index: 999; transition: transform 0.3s;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* HIDDEN */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .main { padding: 16px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .plan-row { grid-template-columns: 40px 1fr; }
+    .plan-row .plan-goal, .plan-row .plan-output { display: none; }
+    .plan-header { display: none; }
+  }
+
+  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .row-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+  .topic-chip {
+    background: var(--accent-light); color: var(--accent);
+    border-radius: 6px; padding: 2px 8px; font-size: 12px; font-weight: 500;
+    display: inline-block;
+  }
+  .empty-state {
+    text-align: center; padding: 48px 20px; color: var(--text3);
+  }
+  .empty-state .big { font-size: 40px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-logo">
+    <span class="icon">📐</span>
+    <span>מעקב תגבורי מתמטיקה</span>
+  </div>
+  <span class="week-badge" id="current-week-badge">שבוע 1</span>
+  <span class="sync-status loading" id="sync-status">טוען...</span>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="switchTab('weekly')">📋 מעקב שבועי</button>
+  <button class="tab-btn" onclick="switchTab('students')">👥 סיכום חניכים</button>
+  <button class="tab-btn" onclick="switchTab('plan')">📅 תוכנית 12 שבועות</button>
+  <button class="tab-btn" onclick="switchTab('dashboard')">📊 דאשבורד</button>
+</nav>
+
+<main class="main">
+
+  <!-- ===== WEEKLY TAB ===== -->
+  <div class="tab-panel active" id="tab-weekly">
+    <div class="week-selector">
+      <label>שבוע נוכחי:</label>
+      <select id="week-select" onchange="loadWeek(this.value)">
+        <option value="1">שבוע 1 – פעולות חשבון וסדר פעולות</option>
+        <option value="2">שבוע 2 – שברים פשוטים וצמצום</option>
+        <option value="3">שבוע 3 – שברים – פעולות</option>
+        <option value="4">שבוע 4 – אחוזים</option>
+        <option value="5">שבוע 5 – משוואות פשוטות</option>
+        <option value="6">שבוע 6 – משוואות רב-שלביות</option>
+        <option value="7">שבוע 7 – בעיות מילוליות</option>
+        <option value="8">שבוע 8 – פונקציות היכרות</option>
+        <option value="9">שבוע 9 – פונקציה ליניארית</option>
+        <option value="10">שבוע 10 – קריאת גרפים</option>
+        <option value="11">שבוע 11 – תרגול משולב</option>
+        <option value="12">שבוע 12 – סימולציה מלאה וסיכום</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">תיעוד שיעור</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;" id="week-topic-label">פעולות חשבון וסדר פעולות</div>
+        </div>
+        <div class="row-actions">
+          <button class="btn-secondary" onclick="clearWeek()">נקה</button>
+          <button class="btn-primary" onclick="saveWeek()">💾 שמור שיעור</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="weekly-table">
+          <thead>
+            <tr>
+              <th>שם חניך ✏️</th>
+              <th>נוכחות</th>
+              <th>ציון תרגול (%)</th>
+
+              <th>טעויות עיקריות</th>
+              <th>רמת הבנה</th>
+              <th>יודע להסביר?</th>
+              <th>מה נשאר לשיעור הבא</th>
+              <th>הערות</th>
+            </tr>
+          </thead>
+          <tbody id="weekly-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STUDENTS TAB ===== -->
+  <div class="tab-panel" id="tab-students">
+    <div class="stats-grid" id="students-stats"></div>
+    <div class="section-title">פרופיל חניכים</div>
+    <div class="student-grid" id="student-cards"></div>
+  </div>
+
+  <!-- ===== PLAN TAB ===== -->
+  <div class="tab-panel" id="tab-plan">
+    <div style="margin-bottom:16px;font-size:14px;color:var(--text2);">תוכנית הלימודים המובנית ל-12 שבועות. השבוע הנוכחי מסומן.</div>
+    <div class="plan-header">
+      <div></div>
+      <div>נושא מרכזי</div>
+      <div>תתי נושאים</div>
+      <div>מטרה פדגוגית</div>
+      <div>תוצר מצופה</div>
+    </div>
+    <div class="plan-grid" id="plan-rows"></div>
+  </div>
+
+  <!-- ===== DASHBOARD TAB ===== -->
+  <div class="tab-panel" id="tab-dashboard">
+    <div class="stats-grid" id="dash-stats"></div>
+    <div class="dashboard-grid">
+      <div class="card">
+        <div class="card-header"><div class="card-title">התקדמות שבועית – ממוצע ציון</div></div>
+        <div class="card-body">
+          <div id="chart-area" style="position:relative;height:180px;">
+            <canvas id="myChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">סטטוס חניכים</div></div>
+        <div class="card-body">
+          <div id="status-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast">✅ הנתונים נשמרו בהצלחה</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const STUDENT_KEYS = ['חניך 1','חניך 2','חניך 3','חניך 4','חניך 5','חניך 6','חניך 7','חניך 8','חניך 9','חניך 10'];
+const STUDENTS = STUDENT_KEYS;
+function sName(key) { return (db._names && db._names[key]) || key; }
+function setStudentName(key, val) {
+  if (!db._names) db._names = {};
+  db._names[key] = val.trim() || key;
+  saveDB();
+  // refresh weekly table name cells live
+  document.querySelectorAll(`[data-namekey="${key}"]`).forEach(el => { el.value = sName(key); });
+}
+const PLAN = [
+  {week:1, topic:'פעולות חשבון וסדר פעולות', sub:'חיבור, חיסור, כפל, חילוק, סדר פעולות', goal:'לייצב בסיס ולצמצם טעויות טכניות', output:'פותר תרגילים בסיסיים בצורה מדויקת'},
+  {week:2, topic:'שברים פשוטים וצמצום', sub:'צמצום, הרחבה, שבר פשוט ומעורב', goal:'לחזק שליטה בשפה המתמטית', output:'מזהה ומבצע פעולות בסיסיות בשברים'},
+  {week:3, topic:'שברים – פעולות', sub:'חיבור, חיסור, כפל, חילוק', goal:'להוריד חשש משברים', output:'פותר רצף תרגילים בשברים באופן עצמאי'},
+  {week:4, topic:'אחוזים', sub:'המרה בין שבר, עשרוני ואחוז', goal:'לבנות גמישות חשיבתית', output:'פותר שאלות אחוזים יומיומיות'},
+  {week:5, topic:'משוואות פשוטות', sub:'פתרון משוואה בנעלם אחד', goal:'להבין מהלך פתרון מסודר', output:'פותר משוואות פשוטות לבד'},
+  {week:6, topic:'משוואות רב-שלביות', sub:'איסוף איברים, פתיחת סוגריים', goal:'לשפר דיוק וסבלנות', output:'פותר משוואות מורכבות יותר'},
+  {week:7, topic:'בעיות מילוליות', sub:'תרגום טקסט לשפה מתמטית', goal:'לחבר הבנה לשימוש', output:'יודע לבנות משוואה מתוך שאלה'},
+  {week:8, topic:'פונקציות – היכרות', sub:'קלט, פלט, תחום, ערך', goal:'להבין רעיון פונקציונלי', output:'מזהה ייצוגים של פונקציה'},
+  {week:9, topic:'פונקציה ליניארית', sub:'שיפוע, חיתוך עם הצירים', goal:'לקרוא ולבנות גרף', output:'משרטט וקורא גרף קו ישר'},
+  {week:10, topic:'קריאת גרפים', sub:'השוואה, מגמות, נקודות מפתח', goal:'לפתח פרשנות נתונים', output:'מפיק מידע נכון מגרף'},
+  {week:11, topic:'תרגול משולב', sub:'שילוב נושאים ועבודה לפי זמן', goal:'לבנות רצף פתרון וביטחון', output:'פותר דף עבודה משולב בזמן'},
+  {week:12, topic:'סימולציה מלאה וסיכום', sub:'מבחן מסכם + שיח משוב', goal:'להעריך מוכנות ולסכם תהליך', output:'מציג שיפור ויעדי המשך'},
+];
+
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw47809quNQ6dn5Y3umzw5hCvdezzk_P4lV0g3q9LCrwcwuyaRHTwV4WOQL-MW2Q9Lk/exec';
+
+let db = {};
+let currentWeek = 1;
+let chartInst = null;
+let saveTimer = null;
+
+async function loadDB() {
+  showSyncStatus('טוען נתונים...', 'loading');
+  try {
+    const res = await fetch(GAS_URL);
+    const raw = await res.json();
+    db = {};
+    Object.entries(raw).forEach(([k, v]) => { db[k] = v; });
+    showSyncStatus('מסונכרן ✓', 'ok');
+    setTimeout(() => hideSyncStatus(), 2000);
+  } catch(e) {
+    showSyncStatus('שגיאת טעינה — עובד אופליין', 'error');
+    const local = localStorage.getItem('math_tracker');
+    if (local) db = JSON.parse(local);
+  }
+}
+
+async function saveDB() {
+  localStorage.setItem('math_tracker', JSON.stringify(db));
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    showSyncStatus('שומר...', 'loading');
+    try {
+      const entries = Object.entries(db);
+      for (const [key, value] of entries) {
+        await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'save', key, value }),
+        });
+      }
+      showSyncStatus('נשמר ✓', 'ok');
+      setTimeout(() => hideSyncStatus(), 2000);
+    } catch(e) {
+      showSyncStatus('נשמר מקומית בלבד', 'error');
+    }
+  }, 800);
+}
+
+function showSyncStatus(msg, type) {
+  let el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'sync-status ' + type;
+  el.style.display = 'inline-flex';
+}
+function hideSyncStatus() {
+  const el = document.getElementById('sync-status');
+  if (el) el.style.display = 'none';
+}
+
+function getStudentInitials(key) {
+  const name = sName(key);
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return parts[0][0] + parts[1][0];
+  return name.slice(0, 2);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'students') renderStudents();
+  if (tab === 'dashboard') renderDashboard();
+  if (tab === 'plan') renderPlan();
+}
+
+// ---- WEEKLY ----
+function loadWeek(w) {
+  currentWeek = parseInt(w);
+  document.getElementById('current-week-badge').textContent = 'שבוע ' + w;
+  document.getElementById('week-topic-label').textContent = PLAN[w-1].topic;
+  renderWeeklyTable();
+}
+
+function renderWeeklyTable() {
+  const tbody = document.getElementById('weekly-tbody');
+  tbody.innerHTML = '';
+  STUDENTS.forEach(student => {
+    const key = `w${currentWeek}_${student}`;
+    const d = db[key] || {};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <input class="td-input" type="text" data-namekey="${student}"
+          value="${sName(student)}"
+          placeholder="${student}"
+          style="font-weight:600;min-width:90px;"
+          oninput="setStudentName('${student}', this.value)"
+          title="לחץ לעריכת שם" />
+      </td>
+      <td>
+        <button class="presence-btn ${d.presence||'unknown'}" onclick="togglePresence('${key}', this)">
+          ${d.presence === 'present' ? '✓ נוכח' : d.presence === 'absent' ? '✗ נעדר' : '—'}
+        </button>
+      </td>
+      <td><input class="td-input score" type="number" min="0" max="100" placeholder="—" value="${d.score||''}" oninput="setField('${key}','score',this.value)" /></td>
+      <td><input class="td-input" type="text" placeholder="פירוט טעויות..." value="${d.errors||''}" oninput="setField('${key}','errors',this.value)" /></td>
+      <td><div class="stars" id="stars_${key}">${renderStars(key, d.understanding||0)}</div></td>
+      <td>
+        <select class="td-input" style="width:100px;" onchange="setField('${key}','canExplain',this.value)">
+          <option value="">—</option>
+          <option value="כן" ${d.canExplain==='כן'?'selected':''}>כן ✓</option>
+          <option value="לא" ${d.canExplain==='לא'?'selected':''}>לא ✗</option>
+        </select>
+      </td>
+      <td><input class="td-input" type="text" placeholder="מה נשאר לשיעור הבא..." value="${d.nextLesson||''}" oninput="setField('${key}','nextLesson',this.value)" /></td>
+      <td><input class="td-input" type="text" placeholder="הערות..." value="${d.notes||''}" oninput="setField('${key}','notes',this.value)" /></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderStars(key, val) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    html += `<span class="star ${i<=val?'on':''}" onclick="setStar('${key}',${i})">${i<=val?'★':'☆'}</span>`;
+  }
+  return html;
+}
+
+function setStar(key, val) {
+  if (!db[key]) db[key] = {};
+  db[key].understanding = val;
+  saveDB();
+  const container = document.getElementById('stars_' + key);
+  if (container) container.innerHTML = renderStars(key, val);
+}
+
+function setField(key, field, val) {
+  if (!db[key]) db[key] = {};
+  db[key][field] = val;
+  saveDB();
+}
+
+function togglePresence(key, btn) {
+  const states = ['unknown','present','absent'];
+  const labels = {'unknown':'—','present':'✓ נוכח','absent':'✗ נעדר'};
+  const cls = {'unknown':'unknown','present':'present','absent':'absent'};
+  const cur = (db[key] && db[key].presence) || 'unknown';
+  const next = states[(states.indexOf(cur)+1) % states.length];
+  setField(key, 'presence', next);
+  btn.className = 'presence-btn ' + cls[next];
+  btn.textContent = labels[next];
+}
+
+function saveWeek() {
+  saveDB();
+  showToast('✅ שיעור שבוע ' + currentWeek + ' נשמר');
+}
+
+function clearWeek() {
+  if (!confirm('למחוק את כל הנתונים של השבוע הזה?')) return;
+  STUDENTS.forEach(s => { delete db[`w${currentWeek}_${s}`]; });
+  saveDB();
+  renderWeeklyTable();
+}
+
+// ---- STUDENTS ----
+function renderStudents() {
+  const statsEl = document.getElementById('students-stats');
+  const cardsEl = document.getElementById('student-cards');
+
+  // compute per-student stats
+  let totalScore = 0, totalCount = 0, totalPresent = 0, totalTotal = 0;
+  const studentData = STUDENTS.map(student => {
+    let scores = [], presence = 0, presenceTotal = 0, understanding = [], canExplainYes = 0, canExplainTotal = 0;
+    for (let w = 1; w <= 12; w++) {
+      const d = db[`w${w}_${student}`];
+      if (!d) continue;
+      if (d.score !== undefined && d.score !== '') scores.push(parseFloat(d.score));
+      if (d.presence === 'present') presence++;
+      if (d.presence === 'present' || d.presence === 'absent') presenceTotal++;
+      if (d.understanding) understanding.push(parseInt(d.understanding));
+      if (d.canExplain === 'כן') canExplainYes++;
+      if (d.canExplain === 'כן' || d.canExplain === 'לא') canExplainTotal++;
+    }
+    const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : null;
+    const presencePct = presenceTotal ? Math.round((presence/presenceTotal)*100) : null;
+    const avgUnderstanding = understanding.length ? (understanding.reduce((a,b)=>a+b,0)/understanding.length).toFixed(1) : null;
+    const canExplainPct = canExplainTotal ? Math.round((canExplainYes/canExplainTotal)*100) : null;
+    const firstScore = scores[0] || null;
+    const lastScore = scores[scores.length-1] || null;
+    if (avgScore) { totalScore += avgScore; totalCount++; }
+    if (presencePct !== null) { totalPresent += presencePct; totalTotal++; }
+
+    let status = 'אין נתונים';
+    if (avgScore !== null) {
+      if (avgScore >= 75 && (presencePct === null || presencePct >= 70)) status = 'במסלול טוב';
+      else if (avgScore >= 55) status = 'במעקב';
+      else status = 'נדרש חיזוק';
+    }
+
+    return { student, avgScore, presencePct, avgUnderstanding, canExplainPct, firstScore, lastScore, status, scoresCount: scores.length };
+  });
+
+  const avgAll = totalCount ? Math.round(totalScore/totalCount) : '—';
+  const avgPres = totalTotal ? Math.round(totalPresent/totalTotal) : '—';
+  const goodCount = studentData.filter(s => s.status === 'במסלול טוב').length;
+  const noData = studentData.filter(s => s.scoresCount === 0).length;
+
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="stat-label">חניכים פעילים</div><div class="stat-value blue">${STUDENTS.length - noData}</div></div>
+    <div class="stat-card"><div class="stat-label">ממוצע ציון</div><div class="stat-value">${avgAll}${totalCount?'%':''}</div></div>
+    <div class="stat-card"><div class="stat-label">ממוצע נוכחות</div><div class="stat-value">${avgPres}${totalTotal?'%':''}</div></div>
+    <div class="stat-card"><div class="stat-label">במסלול טוב</div><div class="stat-value green">${goodCount}</div></div>
+  `;
+
+  cardsEl.innerHTML = '';
+  studentData.forEach(sd => {
+    const div = document.createElement('div');
+    div.className = 'student-card';
+    const statusBadge = sd.status === 'במסלול טוב' ? 'badge-green' : sd.status === 'במעקב' ? 'badge-amber' : sd.status === 'נדרש חיזוק' ? 'badge-red' : 'badge-gray';
+    const scoreBar = sd.avgScore !== null ? `<div class="progress-bar-wrap">
+      <div class="progress-label"><span>ציון ממוצע</span><span>${sd.avgScore}%</span></div>
+      <div class="progress-bar"><div class="progress-fill blue" style="width:${sd.avgScore}%"></div></div>
+    </div>` : '';
+    const presBar = sd.presencePct !== null ? `<div class="progress-bar-wrap">
+      <div class="progress-label"><span>נוכחות</span><span>${sd.presencePct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill green" style="width:${sd.presencePct}%"></div></div>
+    </div>` : '';
+    const improvement = (sd.firstScore && sd.lastScore && sd.scoresCount > 1) 
+      ? `<div class="metric">שיפור: <strong>${sd.lastScore - sd.firstScore > 0 ? '+' : ''}${Math.round(sd.lastScore - sd.firstScore)} נק'</strong></div>` : '';
+
+    div.innerHTML = `
+      <div class="student-header">
+        <div class="avatar">${getStudentInitials(sd.student)}</div>
+        <div>
+          <div class="student-name">${sName(sd.student)}</div>
+          <span class="badge ${statusBadge}">${sd.status}</span>
+        </div>
+      </div>
+      ${scoreBar}
+      ${presBar}
+      <div class="student-metrics">
+        ${sd.avgUnderstanding ? `<div class="metric">הבנה: <strong>${sd.avgUnderstanding}/5</strong></div>` : ''}
+        ${sd.canExplainPct !== null ? `<div class="metric">מסביר: <strong>${sd.canExplainPct}%</strong></div>` : ''}
+        ${improvement}
+        <div class="metric">שיעורים: <strong>${sd.scoresCount}/12</strong></div>
+      </div>
+    `;
+    cardsEl.appendChild(div);
+  });
+}
+
+// ---- PLAN ----
+function renderPlan() {
+  const el = document.getElementById('plan-rows');
+  el.innerHTML = '';
+  PLAN.forEach(p => {
+    const isCurrent = p.week === currentWeek;
+    const div = document.createElement('div');
+    div.className = 'plan-row' + (isCurrent ? ' current' : '');
+    div.innerHTML = `
+      <div><div class="week-num ${isCurrent?'active':''}">${p.week}</div></div>
+      <div>
+        <div class="plan-topic">${p.topic}</div>
+        <div class="plan-sub">${p.sub}</div>
+      </div>
+      <div class="plan-goal" style="font-size:13px;color:var(--text2);">${p.goal}</div>
+      <div class="plan-output" style="font-size:13px;color:var(--green);">${p.output}</div>
+      ${isCurrent ? '<div><span class="badge badge-blue">שיעור נוכחי</span></div>' : '<div></div>'}
+    `;
+    el.appendChild(div);
+  });
+}
+
+// ---- DASHBOARD ----
+function renderDashboard() {
+  // compute weekly averages
+  const weeklyAvg = [];
+  for (let w = 1; w <= 12; w++) {
+    let scores = [];
+    STUDENTS.forEach(s => {
+      const d = db[`w${w}_${s}`];
+      if (d && d.score !== undefined && d.score !== '') scores.push(parseFloat(d.score));
+    });
+    weeklyAvg.push(scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : null);
+  }
+
+  // status counts
+  let good = 0, watch = 0, needs = 0, nodata = 0;
+  STUDENTS.forEach(student => {
+    let scores = [];
+    for (let w = 1; w <= 12; w++) {
+      const d = db[`w${w}_${student}`];
+      if (d && d.score !== undefined && d.score !== '') scores.push(parseFloat(d.score));
+    }
+    if (!scores.length) { nodata++; return; }
+    const avg = scores.reduce((a,b)=>a+b,0)/scores.length;
+    if (avg >= 75) good++;
+    else if (avg >= 55) watch++;
+    else needs++;
+  });
+
+  const totalScores = weeklyAvg.filter(v => v !== null);
+  const overallAvg = totalScores.length ? Math.round(totalScores.reduce((a,b)=>a+b,0)/totalScores.length) : null;
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">שבועות עם נתונים</div><div class="stat-value blue">${totalScores.length}/12</div></div>
+    <div class="stat-card"><div class="stat-label">ממוצע כולל</div><div class="stat-value">${overallAvg !== null ? overallAvg+'%' : '—'}</div></div>
+    <div class="stat-card"><div class="stat-label">במסלול טוב</div><div class="stat-value green">${good}</div></div>
+    <div class="stat-card"><div class="stat-label">נדרש חיזוק</div><div class="stat-value amber">${needs}</div></div>
+  `;
+
+  // chart
+  if (chartInst) { chartInst.destroy(); chartInst = null; }
+  const ctx = document.getElementById('myChart').getContext('2d');
+  const labels = PLAN.map(p => 'ש' + p.week);
+  const data = weeklyAvg.map(v => v);
+  chartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'ממוצע ציון',
+        data,
+        borderColor: '#2d5a8e',
+        backgroundColor: 'rgba(45,90,142,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#2d5a8e',
+        pointRadius: 5,
+        tension: 0.3,
+        fill: true,
+        spanGaps: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 100, ticks: { font: { size: 11 } }, grid: { color: '#e2ddd6' } },
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // status list
+  const sl = document.getElementById('status-list');
+  sl.innerHTML = '';
+  const items = [
+    {label:'במסלול טוב', count:good, cls:'badge-green'},
+    {label:'במעקב', count:watch, cls:'badge-amber'},
+    {label:'נדרש חיזוק', count:needs, cls:'badge-red'},
+    {label:'אין נתונים', count:nodata, cls:'badge-gray'},
+  ];
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);';
+    row.innerHTML = `<span class="badge ${item.cls}">${item.label}</span><span style="font-size:22px;font-weight:600;">${item.count}</span>`;
+    sl.appendChild(row);
+  });
+}
+
+// ---- TOAST ----
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ---- INIT ----
+loadDB().then(() => {
+  renderWeeklyTable();
+  renderPlan();
+});
+</script>
+</body>
+</html>
